@@ -6,7 +6,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       --primary: #1e293b;
@@ -397,8 +398,9 @@
     body.pdf-mode .no-print { display: none !important; }
     body.pdf-mode .signatures-section { display: none !important; }
     body.pdf-mode .signature-section { display: block !important; }
+    body.pdf-mode .candidate-grid { display: none !important; }
     body.pdf-mode .table-wrap { overflow: visible !important; }
-    body.pdf-mode .card { box-shadow: none !important; border: none !important; }
+    body.pdf-mode .card { box-shadow: none !important; border: none !important; padding: 14mm 12mm 10mm 12mm !important; }
     body.pdf-mode input,
     body.pdf-mode select {
       border: none !important;
@@ -577,6 +579,7 @@
 
   <script>
     let currentLang = 'fr';
+    try { const saved = localStorage.getItem('scrutin_lang'); if (saved === 'ar' || saved === 'fr') currentLang = saved; } catch(e) {}
 
 
     const translations = {
@@ -627,6 +630,13 @@
     let candidates = getDefaultCandidates();
 
 
+    function defaultValues(lang) {
+      return lang === 'ar'
+        ? { title: "انتخاب مندوب الفصل", org: "ثانوية ابن خلدون" }
+        : { title: "Élection du Délégué de Classe", org: "Lycée Ibn Khaldoun" };
+    }
+
+
     function init() {
       document.getElementById('election-date').valueAsDate = new Date();
       const saved = localStorage.getItem('scrutin_gimi_data');
@@ -634,12 +644,16 @@
         try {
           const data = JSON.parse(saved);
           candidates = data.candidates || candidates;
-          document.getElementById('election-title').value = data.title || "Élection du Délégué de Classe";
-          document.getElementById('election-org').value = data.org || "Lycée Ibn Khaldoun";
+          document.getElementById('election-title').value = data.title || defaultValues(currentLang).title;
+          document.getElementById('election-org').value = data.org || defaultValues(currentLang).org;
           if (data.date) document.getElementById('election-date').value = data.date;
           document.getElementById('voters-registered').value = data.registered || 30;
           document.getElementById('blank-votes-input').value = data.blank || 0;
         } catch(e) { console.error(e); }
+      } else {
+        const d = defaultValues(currentLang);
+        document.getElementById('election-title').value = d.title;
+        document.getElementById('election-org').value = d.org;
       }
       render();
     }
@@ -752,7 +766,19 @@
     }
 
 
-    function toggleLang() { currentLang = currentLang === 'fr' ? 'ar' : 'fr'; render(); }
+    function toggleLang() {
+      const prev = currentLang;
+      const next = currentLang === 'fr' ? 'ar' : 'fr';
+      const prevDefaults = defaultValues(prev);
+      const nextDefaults = defaultValues(next);
+      const titleEl = document.getElementById('election-title');
+      const orgEl = document.getElementById('election-org');
+      if (titleEl.value === prevDefaults.title) titleEl.value = nextDefaults.title;
+      if (orgEl.value === prevDefaults.org) orgEl.value = nextDefaults.org;
+      currentLang = next;
+      try { localStorage.setItem('scrutin_lang', currentLang); } catch(e) {}
+      render();
+    }
 
 
     function TelechargerPDF() {
@@ -776,16 +802,41 @@
       card.style.display = 'block';
       card.style.width = '210mm';
       card.style.maxWidth = '210mm';
-      const captureWidth = Math.ceil(card.getBoundingClientRect().width);
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: 'PV_Scrutin.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: captureWidth, scrollX: 0, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      };
-      html2pdf().set(opt).from(card).save().then(restore);
+      document.fonts.ready.then(() => {
+        return htmlToImage.toCanvas(card, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          pixelRatio: 2,
+          cacheBust: true,
+          skipFonts: true
+        });
+      }).then((canvas) => {
+        const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+        const pageW = 210, pageH = 297;
+        const imgW = pageW, imgH = (canvas.height / canvas.width) * pageW;
+        if (imgH <= pageH) {
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgW, imgH);
+        } else {
+          const pages = Math.ceil(imgH / pageH);
+          const sliceH = Math.ceil(canvas.height / pages);
+          for (let i = 0; i < pages; i++) {
+            if (i > 0) pdf.addPage();
+            const slice = document.createElement('canvas');
+            slice.width = canvas.width;
+            slice.height = Math.min(sliceH, canvas.height - i * sliceH);
+            const ctx = slice.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, slice.width, slice.height);
+            ctx.drawImage(canvas, 0, i * sliceH, canvas.width, sliceH, 0, 0, canvas.width, slice.height);
+            pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgW, (slice.height / canvas.width) * pageW);
+          }
+        }
+        pdf.save('PV_Scrutin.pdf');
+        restore();
+      }).catch((err) => {
+        console.error('Erreur PDF:', err);
+        restore();
+      });
     }
 
 
@@ -805,8 +856,9 @@
 
 
     function resetAll() {
-      document.getElementById('election-title').value = "Élection du Délégué de Classe";
-      document.getElementById('election-org').value = "Lycée Ibn Khaldoun";
+      const d = defaultValues(currentLang);
+      document.getElementById('election-title').value = d.title;
+      document.getElementById('election-org').value = d.org;
       document.getElementById('voters-registered').value = 30;
       document.getElementById('blank-votes-input').value = 0;
       candidates = getDefaultCandidates();
