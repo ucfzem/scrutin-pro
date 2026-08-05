@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scrutin Pro</title>
+<style>
+  :root{
+    --main:#7c3aed; --dark:#0f172a; --bg:#f5f3ff; --card:#fff;
+    --border:#e9d5ff; --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Segoe UI', Tahoma, Arial, sans-serif; background:var(--bg); color:var(--dark); padding-bottom:60px;}
+  body.ar{font-family:'Tahoma','Segoe UI',Arial,sans-serif;}
+  header{background:linear-gradient(135deg,var(--main),#a855f7); color:#fff; padding:18px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;}
+  header h1{font-size:1.2rem;}
+  .lang-btn{background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4); color:#fff; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:.9rem;}
+  .container{max-width:760px; margin:0 auto; padding:16px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .card h2{font-size:1rem; color:var(--main); margin-bottom:12px;}
+  label{display:block; font-size:.8rem; color:#64748b; margin-bottom:4px;}
+  input, select{width:100%; padding:9px 10px; border:1px solid #d8b4fe; border-radius:8px; font-size:.95rem;}
+  input:focus, select:focus{outline:2px solid var(--main); outline-offset:-1px;}
+  .btn{display:inline-block; background:var(--main); color:#fff; border:none; padding:11px 18px; border-radius:8px; cursor:pointer; font-size:.95rem; margin:4px 6px 4px 0;}
+  .btn.secondary{background:#fff; color:var(--main); border:1px solid var(--main);}
+  .btn:hover{filter:brightness(1.1);}
+  .candidate-row{display:flex; gap:8px; margin-bottom:8px; align-items:center;}
+  .candidate-row input{flex:1;}
+  .del{background:none; border:none; color:var(--bad); font-size:1.1rem; cursor:pointer; flex:0;}
+  .option-grid{display:grid; gap:10px;}
+  .option-card{border:2px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; text-align:center; transition:all .15s;}
+  .option-card:hover{border-color:var(--main); transform:translateY(-2px);}
+  .option-card.selected{border-color:var(--main); background:#faf5ff;}
+  .option-card .votes{font-size:1.2rem; font-weight:700; color:var(--main);}
+  .bar-track{height:12px; background:#ede9fe; border-radius:999px; overflow:hidden; margin-top:8px;}
+  .bar-fill{height:100%; background:linear-gradient(90deg,var(--main),#a855f7); border-radius:999px; width:0; transition:width .4s;}
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; text-align:center;}
+  .stat{background:#faf5ff; border:1px solid var(--border); border-radius:10px; padding:10px;}
+  .stat .num{font-size:1.5rem; font-weight:700; color:var(--main);}
+  .stat .lbl{font-size:.72rem; color:#64748b;}
+  .sign-list{display:grid; gap:6px; margin-top:10px;}
+  .sign-row{display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--border); border-radius:8px; font-size:.9rem;}
+  .sign-row input[type=checkbox]{width:18px; height:18px; flex:0;}
+  .footer{text-align:center; color:#94a3b8; font-size:.75rem; margin-top:20px;}
+  .pv{background:#faf5ff; border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:12px; font-size:.9rem; white-space:pre-line;}
+  @media print{
+    header, .no-print, .btn, .lang-btn{display:none !important;}
+    body{background:#fff; padding:0;}
+    .card{box-shadow:none; border:none; padding:6px;}
+    .option-card{border-color:#000;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="appTitle">🗳️ Scrutin Pro</h1>
+  <button class="lang-btn" id="langBtn" onclick="toggleLang()">العربية</button>
+</header>
+
+<div class="container">
+
+  <div class="card" id="setupCard">
+    <h2 id="secSetup">🛠️ Configurer le scrutin</h2>
+    <div style="margin-bottom:10px">
+      <label id="lTitle">Titre du scrutin</label>
+      <input id="voteTitle" placeholder="Ex: Élection du délégué de classe — 6ème année">
+    </div>
+    <div style="margin-bottom:10px">
+      <label id="lElectorate">Nombre d'électeurs inscrits</label>
+      <input id="electorate" type="number" min="1" value="30">
+    </div>
+    <div>
+      <label id="lCandidates">Candidats</label>
+      <div id="candidateList"></div>
+      <button class="btn secondary" onclick="addCandidate()">➕ <span id="addCandLbl">Ajouter un candidat</span></button>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn" id="startBtn" onclick="startVote()">🚀 <span id="startLbl">Lancer le scrutin</span></button>
+      <button class="btn secondary" onclick="addVoter()">👤 <span id="addVoterLbl">Ajouter un électeur</span></button>
+    </div>
+  </div>
+
+  <div class="card" id="voteCard" style="display:none">
+    <h2 id="liveTitle"></h2>
+    <div class="option-grid" id="optionGrid"></div>
+    <div class="no-print" style="margin-top:12px">
+      <button class="btn" id="stopBtn" onclick="stopVote()">⏹️ <span id="stopLbl">Clôturer le scrutin</span></button>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statVotes">0</div><div class="lbl" id="lblVotes">Votes exprimés</div></div>
+      <div class="stat"><div class="num" id="statPct">0%</div><div class="lbl" id="lblTurnout">Taux de participation</div></div>
+      <div class="stat"><div class="num" id="statBlank">0</div><div class="lbl" id="lblBlank">Votes blancs</div></div>
+    </div>
+  </div>
+
+  <div class="card no-print" id="pvCard" style="display:none">
+    <h2 id="secVoters">📋 Grille d'émargement</h2>
+    <div class="sign-list" id="signList"></div>
+  </div>
+
+  <div class="card no-print">
+    <h2 id="secActions">⚙️ Actions</h2>
+    <button class="btn" onclick="exportPv()">🖨️ <span id="exportLbl">Imprimer PV</span></button>
+    <button class="btn secondary" onclick="resetAll()">🗑️ <span id="resetLbl">Nouveau scrutin</span></button>
+  </div>
+
+  <div class="card pv" id="pvBox"></div>
+
+  <div class="footer">Scrutin Pro — données stockées localement sur cet appareil.</div>
+</div>
+
+<script>
+const T = {
+  fr: {
+    title:"🗳️ Scrutin Pro", secSetup:"🛠️ Configurer le scrutin", lTitle:"Titre du scrutin", lElectorate:"Nombre d'électeurs inscrits",
+    lCandidates:"Candidats", addCandLbl:"Ajouter un candidat", startLbl:"Lancer le scrutin", addVoterLbl:"Ajouter un électeur",
+    secVoters:"📋 Grille d'émargement", secActions:"⚙️ Actions", exportLbl:"Imprimer PV", resetLbl:"Nouveau scrutin",
+    lblVotes:"Votes exprimés", lblTurnout:"Taux de participation", lblBlank:"Votes blancs", stopLbl:"Clôturer le scrutin",
+    candPlaceholder:"Nom du candidat", voterPlaceholder:"Nom de l'électeur", blankOption:"Vote blanc / Abstention",
+    votes:"voix", pvTitle:"Procès-verbal du scrutin", pvCandidates:"Résultats", pvTotal:"Total des suffrages exprimés", pvTurnout:"Participation", pvWinner:"Candidat élu", pvSigns:"Grille d'émargement (présents)", pvStatus:"Scrutin", pvClosed:"Clôturé", pvOpen:"En cours", confirmStop:"Clôturer le scrutin ? Les votes ne seront plus possibles.", confirmReset:"Recommencer un nouveau scrutin ?", voteThanks:"Votre vote a été enregistré."
+  },
+  ar: {
+    title:"🗳️ نظام التصويت", secSetup:"🛠️ إعداد عملية التصويت", lTitle:"عنوان عملية التصويت", lElectorate:"عدد الناخبين المسجلين",
+    lCandidates:"المرشحون", addCandLbl:"إضافة مرشح", startLbl:"بدء التصويت", addVoterLbl:"إضافة ناخب",
+    secVoters:"📋 لائحة التوقيع", secActions:"⚙️ إجراءات", exportLbl:"طباعة المحضر", resetLbl:"عملية جديدة",
+    lblVotes:"الأصوات المعبر عنها", lblTurnout:"نسبة المشاركة", lblBlank:"أوراق بيضاء", stopLbl:"إغلاق التصويت",
+    candPlaceholder:"اسم المرشح", voterPlaceholder:"اسم الناخب", blankOption:"ورقة بيضاء / امتناع",
+    votes:"صوت", pvTitle:"محضر عملية التصويت", pvCandidates:"النتائج", pvTotal:"مجموع الأصوات المعبر عنها", pvTurnout:"نسبة المشاركة", pvWinner:"المرشح(ة) المنتخب(ة)", pvSigns:"لائحة التوقيع (الحاضرون)", pvStatus:"حالة التصويت", pvClosed:"مغلق", pvOpen:"جاري", confirmStop:"إغلاق التصويت؟ لن يكون بالإمكان التصويت بعد الآن.", confirmReset:"بدء عملية تصويت جديدة؟", voteThanks:"تم تسجيل صوتك."
+  }
+};
+
+let lang = localStorage.getItem('sp_lang') || 'fr';
+let state = {
+  title:'', electorate:30, candidates:[], voters:[],
+  counts:{}, blanks:0, started:false, closed:false, myVote:false
+};
+
+function t(k){ return T[lang][k]; }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toggleLang(){
+  lang = lang === 'fr' ? 'ar' : 'fr';
+  document.body.classList.toggle('ar', lang === 'ar');
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  localStorage.setItem('sp_lang', lang);
+  applyTexts();
+}
+
+function applyTexts(){
+  document.getElementById('appTitle').textContent = t('title');
+  document.getElementById('secSetup').textContent = t('secSetup');
+  document.getElementById('lTitle').textContent = t('lTitle');
+  document.getElementById('lElectorate').textContent = t('lElectorate');
+  document.getElementById('lCandidates').textContent = t('lCandidates');
+  document.getElementById('addCandLbl').textContent = t('addCandLbl');
+  document.getElementById('startLbl').textContent = t('startLbl');
+  document.getElementById('addVoterLbl').textContent = t('addVoterLbl');
+  document.getElementById('secVoters').textContent = t('secVoters');
+  document.getElementById('secActions').textContent = t('secActions');
+  document.getElementById('exportLbl').textContent = t('exportLbl');
+  document.getElementById('resetLbl').textContent = t('resetLbl');
+  document.getElementById('lblVotes').textContent = t('lblVotes');
+  document.getElementById('lblTurnout').textContent = t('lblTurnout');
+  document.getElementById('lblBlank').textContent = t('lblBlank');
+  document.getElementById('stopLbl').textContent = t('stopLbl');
+  document.getElementById('langBtn').textContent = lang === 'fr' ? 'العربية' : 'Français';
+}
+
+function addCandidate(){
+  state.candidates.push({name:'', votes:0});
+  renderCandidates();
+}
+
+function removeCandidate(i){
+  state.candidates.splice(i,1);
+  renderCandidates();
+}
+
+function renderCandidates(){
+  const list = document.getElementById('candidateList');
+  list.innerHTML = '';
+  state.candidates.forEach((c,i)=>{
+    const row = document.createElement('div');
+    row.className = 'candidate-row';
+    row.innerHTML = `<input data-i="${i}" value="${esc(c.name)}" placeholder="${t('candPlaceholder')}">` +
+      `<button class="del" onclick="removeCandidate(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+  document.querySelectorAll('#candidateList input').forEach(inp=>{
+    inp.addEventListener('input', function(){ state.candidates[+this.dataset.i].name = this.value; });
+  });
+}
+
+function addVoter(){
+  const name = prompt(t('voterPlaceholder'));
+  if(name && name.trim()) state.voters.push({name:name.trim(), signed:false});
+  renderVoters();
+}
+
+function renderVoters(){
+  const list = document.getElementById('signList');
+  list.innerHTML = '';
+  state.voters.forEach((v,i)=>{
+    const row = document.createElement('div');
+    row.className = 'sign-row';
+    row.innerHTML = `<input type="checkbox" ${v.signed?'checked':''} data-i="${i}"> <span>${esc(v.name)}</span>`;
+    list.appendChild(row);
+  });
+  document.querySelectorAll('#signList input').forEach(inp=>{
+    inp.addEventListener('change', function(){
+      state.voters[+this.dataset.i].signed = this.checked;
+      save();
+    });
+  });
+}
+
+function startVote(){
+  const title = document.getElementById('voteTitle').value.trim();
+  state.title = title || (lang==='fr'?'Scrutin':'تصويت');
+  state.electorate = +document.getElementById('electorate').value || 1;
+  state.counts = {}; state.blanks = 0; state.started = true; state.closed = false; state.myVote = false;
+  save(); render();
+}
+
+function stopVote(){
+  if(!confirm(t('confirmStop'))) return;
+  state.closed = true;
+  save(); render();
+}
+
+function vote(i){
+  if(!state.started || state.closed) return;
+  if(state.myVote){ alert(lang==='fr'?'Vous avez déjà voté.':'لقد صوت بالفعل.'); return; }
+  if(i === -1){ state.blanks++; }
+  else { state.counts[i] = (state.counts[i]||0) + 1; }
+  state.myVote = true;
+  save(); render();
+  alert(t('voteThanks'));
+}
+
+function render(){
+  document.getElementById('liveTitle').textContent = state.title;
+  document.getElementById('setupCard').style.display = state.started ? 'none' : 'block';
+  document.getElementById('voteCard').style.display = state.started ? 'block' : 'none';
+  document.getElementById('pvCard').style.display = state.started ? 'block' : 'none';
+
+  const grid = document.getElementById('optionGrid');
+  grid.innerHTML = '';
+  const totalVotes = state.candidates.reduce((s,c)=> s + (state.counts[state.candidates.indexOf(c)]||0), 0) + state.blanks;
+  const base = totalVotes > 0 ? totalVotes : 1;
+
+  state.candidates.forEach((c,i)=>{
+    const n = state.counts[i]||0;
+    const pct = Math.round((n/base)*100);
+    const card = document.createElement('div');
+    card.className = 'option-card';
+    card.innerHTML = `<div class="votes">${n} ${t('votes')}</div>
+      <div><b>${esc(c.name||'?')}</b></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
+    if(state.started && !state.closed && !state.myVote) card.onclick = ()=>vote(i);
+    grid.appendChild(card);
+  });
+
+  const blankPct = Math.round((state.blanks/base)*100);
+  const blank = document.createElement('div');
+  blank.className = 'option-card';
+  blank.innerHTML = `<div class="votes">${state.blanks} ${t('votes')}</div>
+    <div><b>${t('blankOption')}</b></div>
+    <div class="bar-track"><div class="bar-fill" style="width:${blankPct}%"></div></div>`;
+  if(state.started && !state.closed && !state.myVote) blank.onclick = ()=>vote(-1);
+  grid.appendChild(blank);
+
+  document.getElementById('statVotes').textContent = totalVotes;
+  document.getElementById('statPct').textContent = Math.round((totalVotes/Math.max(1,state.electorate))*100) + '%';
+  document.getElementById('statBlank').textContent = state.blanks;
+  document.getElementById('stopBtn').style.display = (state.started && !state.closed) ? 'inline-block' : 'none';
+
+  renderPv(totalVotes);
+}
+
+function renderPv(totalVotes){
+  const box = document.getElementById('pvBox');
+  let lines = `📄 ${t('pvTitle')}: ${state.title}\n`;
+  lines += `${t('pvStatus')}: ${state.closed ? t('pvClosed') : t('pvOpen')}\n`;
+  lines += `─\n${t('pvCandidates')}:\n`;
+  state.candidates.forEach((c,i)=>{
+    const n = state.counts[i]||0;
+    const pct = totalVotes ? Math.round((n/totalVotes)*100) : 0;
+    lines += `  ${c.name||'?'}: ${n} (${pct}%)\n`;
+  });
+  lines += `  ${t('blankOption')}: ${state.blanks}\n`;
+  lines += `─\n${t('pvTotal')}: ${totalVotes} / ${state.electorate}\n`;
+  lines += `${t('pvTurnout')}: ${Math.round((totalVotes/Math.max(1,state.electorate))*100)}%\n`;
+  let winner = {name:null, n:-1};
+  state.candidates.forEach((c,i)=>{ if((state.counts[i]||0) > winner.n) winner = {name:c.name, n:state.counts[i]||0}; });
+  if(state.closed && winner.name) lines += `🏆 ${t('pvWinner')}: ${winner.name} (${winner.n} ${t('votes')})\n`;
+  lines += `─\n${t('pvSigns')}:\n`;
+  state.voters.forEach(v=>{ lines += `  ${v.signed ? '☑' : '☐'} ${v.name}\n`; });
+  box.textContent = lines;
+}
+
+function exportPv(){ window.print(); }
+
+function resetAll(){
+  if(!confirm(t('confirmReset'))) return;
+  localStorage.removeItem('sp_state');
+  state = { title:'', electorate:30, candidates:[], voters:[], counts:{}, blanks:0, started:false, closed:false, myVote:false };
+  document.getElementById('voteTitle').value='';
+  document.getElementById('electorate').value='30';
+  renderCandidates(); renderVoters(); render();
+}
+
+function save(){ localStorage.setItem('sp_state', JSON.stringify(state)); }
+
+try{
+  const saved = JSON.parse(localStorage.getItem('sp_state'));
+  if(saved){ state = Object.assign(state, saved); }
+}catch(e){}
+
+renderCandidates();
+renderVoters();
+render();
+applyTexts();
+</script>
+</body>
+</html>
