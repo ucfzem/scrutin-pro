@@ -3,6 +3,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Système de Scrutin & Élection Pro - UcfZem</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
@@ -383,7 +386,13 @@
     /* ========== CAPTURE PDF (classe temporaire) ========== */
     body.pdf-mode {
       overflow-x: visible !important;
+      font-family: 'Poppins', 'Tajawal', sans-serif !important;
     }
+    html[dir="rtl"] body.pdf-mode {
+      direction: rtl !important;
+      text-align: right !important;
+    }
+    html[dir="rtl"] body.pdf-mode .school-header { direction: rtl; text-align: center; }
     body.pdf-mode .no-print { display: none !important; }
     body.pdf-mode .signatures-section { display: none !important; }
     body.pdf-mode .signature-section { display: block !important; }
@@ -745,10 +754,22 @@
 
 
     function TelechargerPDF() {
+      const btn = document.getElementById('btn-pdf');
+      if (btn.disabled) return;
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
       const card = document.querySelector('.card');
       const prevWidth = card.style.width;
       const prevMaxWidth = card.style.maxWidth;
       const prevDisplay = card.style.display;
+      const restore = () => {
+        document.body.classList.remove('pdf-mode');
+        card.style.width = prevWidth;
+        card.style.maxWidth = prevMaxWidth;
+        card.style.display = prevDisplay;
+        btn.disabled = false;
+        btn.style.opacity = '';
+      };
       document.body.classList.add('pdf-mode');
       card.style.display = 'block';
       card.style.width = '210mm';
@@ -762,12 +783,7 @@
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
       };
-      html2pdf().set(opt).from(card).save().then(() => {
-        document.body.classList.remove('pdf-mode');
-        card.style.width = prevWidth;
-        card.style.maxWidth = prevMaxWidth;
-        card.style.display = prevDisplay;
-      });
+      html2pdf().set(opt).from(card).save().then(restore);
     }
 
 
