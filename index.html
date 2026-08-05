@@ -343,6 +343,39 @@
       .vote-count-display { font-size: 1.6rem; }
     }
 
+    /* ========== RTL ========== */
+    html[dir="rtl"] body {
+      direction: rtl;
+      text-align: right;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+
+    html[dir="rtl"] .container,
+    html[dir="rtl"] .card {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+
+    html[dir="rtl"] .top-bar {
+      justify-content: space-between;
+    }
+
+
+    html[dir="rtl"] table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0;
+    }
+
+
+    html[dir="rtl"] .stats-summary {
+      text-align: right;
+    }
+
+
     @media print {
       body { background: white; padding: 0; }
       .top-bar, .no-print { display: none !important; }
