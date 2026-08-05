@@ -323,6 +323,25 @@
     }
 
 
+    .table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    @media screen and (max-width: 640px) {
+      body { padding: 12px; }
+      .top-bar { flex-direction: column; align-items: stretch; }
+      .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+      .controls .btn { width: 100%; justify-content: center; }
+      .controls .btn-success { grid-column: span 2; }
+      .card { padding: 16px; }
+      .card-title { font-size: 1.1rem; }
+      .candidate-grid { grid-template-columns: 1fr; }
+      .stats-summary { grid-template-columns: 1fr 1fr; }
+      .signatures-section { grid-template-columns: 1fr; }
+      .table-wrap table { min-width: 380px; }
+      .results-table th, .results-table td { padding: 8px 6px; font-size: 0.8rem; }
+      .vote-btn { width: 44px; height: 44px; }
+      .vote-count-display { font-size: 1.6rem; }
+    }
+
     @media print {
       body { background: white; padding: 0; }
       .top-bar, .no-print { display: none !important; }
@@ -423,6 +442,7 @@
 
 
       <h3 style="margin-bottom: 12px; font-size: 1.05rem; color: var(--primary);" id="txt-detailed-results">Tableau Général des Résultats</h3>
+      <div class="table-wrap">
       <table class="results-table">
         <thead>
           <tr>
@@ -435,6 +455,7 @@
         </thead>
         <tbody id="results-tbody"></tbody>
       </table>
+      </div>
 
 
       <div class="signatures-section">
