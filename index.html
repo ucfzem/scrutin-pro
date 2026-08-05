@@ -1,327 +1,692 @@
-<!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<!DOCTYPE html><html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scrutin Pro</title>
-<style>
-  :root{
-    --main:#7c3aed; --dark:#0f172a; --bg:#f5f3ff; --card:#fff;
-    --border:#e9d5ff; --ok:#16a34a; --warn:#d97706; --bad:#dc2626;
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{font-family:'Segoe UI', Tahoma, Arial, sans-serif; background:var(--bg); color:var(--dark); padding-bottom:60px;}
-  body.ar{font-family:'Tahoma','Segoe UI',Arial,sans-serif;}
-  header{background:linear-gradient(135deg,var(--main),#a855f7); color:#fff; padding:18px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;}
-  header h1{font-size:1.2rem;}
-  .lang-btn{background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.4); color:#fff; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:.9rem;}
-  .container{max-width:760px; margin:0 auto; padding:16px;}
-  .card{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.05);}
-  .card h2{font-size:1rem; color:var(--main); margin-bottom:12px;}
-  label{display:block; font-size:.8rem; color:#64748b; margin-bottom:4px;}
-  input, select{width:100%; padding:9px 10px; border:1px solid #d8b4fe; border-radius:8px; font-size:.95rem;}
-  input:focus, select:focus{outline:2px solid var(--main); outline-offset:-1px;}
-  .btn{display:inline-block; background:var(--main); color:#fff; border:none; padding:11px 18px; border-radius:8px; cursor:pointer; font-size:.95rem; margin:4px 6px 4px 0;}
-  .btn.secondary{background:#fff; color:var(--main); border:1px solid var(--main);}
-  .btn:hover{filter:brightness(1.1);}
-  .candidate-row{display:flex; gap:8px; margin-bottom:8px; align-items:center;}
-  .candidate-row input{flex:1;}
-  .del{background:none; border:none; color:var(--bad); font-size:1.1rem; cursor:pointer; flex:0;}
-  .option-grid{display:grid; gap:10px;}
-  .option-card{border:2px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; text-align:center; transition:all .15s;}
-  .option-card:hover{border-color:var(--main); transform:translateY(-2px);}
-  .option-card.selected{border-color:var(--main); background:#faf5ff;}
-  .option-card .votes{font-size:1.2rem; font-weight:700; color:var(--main);}
-  .bar-track{height:12px; background:#ede9fe; border-radius:999px; overflow:hidden; margin-top:8px;}
-  .bar-fill{height:100%; background:linear-gradient(90deg,var(--main),#a855f7); border-radius:999px; width:0; transition:width .4s;}
-  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; text-align:center;}
-  .stat{background:#faf5ff; border:1px solid var(--border); border-radius:10px; padding:10px;}
-  .stat .num{font-size:1.5rem; font-weight:700; color:var(--main);}
-  .stat .lbl{font-size:.72rem; color:#64748b;}
-  .sign-list{display:grid; gap:6px; margin-top:10px;}
-  .sign-row{display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid var(--border); border-radius:8px; font-size:.9rem;}
-  .sign-row input[type=checkbox]{width:18px; height:18px; flex:0;}
-  .footer{text-align:center; color:#94a3b8; font-size:.75rem; margin-top:20px;}
-  .pv{background:#faf5ff; border:1px solid var(--border); border-radius:10px; padding:12px; margin-top:12px; font-size:.9rem; white-space:pre-line;}
-  @media print{
-    header, .no-print, .btn, .lang-btn{display:none !important;}
-    body{background:#fff; padding:0;}
-    .card{box-shadow:none; border:none; padding:6px;}
-    .option-card{border-color:#000;}
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Système de Scrutin & Élection Pro - GIMI</title>
+  <style>
+    :root {
+      --primary: #1e293b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --success: #16a34a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px 12px;
+    }
+
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+
+    .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+
+    .btn {
+      padding: 8px 14px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #e2e8f0; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #15803d; }
+
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+
+    .card-header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+
+    .meta-inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+
+    .input-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+
+    .input-group input, .input-group select {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+
+    .input-group input:focus, .input-group select:focus {
+      border-color: var(--accent);
+    }
+
+
+    .candidate-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+
+    .candidate-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+
+    .candidate-card.winner {
+      border: 2px solid #eab308;
+      background: #fefce8;
+    }
+
+
+    .winner-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #eab308;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+
+    html[dir="rtl"] .winner-badge {
+      right: auto;
+      left: 10px;
+    }
+
+
+    .candidate-name-input {
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      border-bottom: 1px dashed #cbd5e1;
+      padding: 4px 0;
+      width: 100%;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+
+    .candidate-name-input:focus {
+      outline: none;
+      border-bottom-color: var(--accent);
+    }
+
+
+    .vote-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px;
+    }
+
+
+    .vote-count-display {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--primary);
+      min-width: 45px;
+      text-align: center;
+    }
+
+
+    .vote-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .vote-btn.add { background: #dcfce7; color: #15803d; }
+    .vote-btn.add:hover { background: #bbf7d0; }
+    .vote-btn.sub { background: #fee2e2; color: #b91c1c; }
+    .vote-btn.sub:hover { background: #fecaca; }
+
+
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+
+
+    .stat-box { text-align: center; }
+    .stat-box .number { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+    .stat-box .label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .results-table th, .results-table td { padding: 10px; border: 1px solid var(--border); text-align: left; }
+    html[dir="rtl"] .results-table th, html[dir="rtl"] .results-table td { text-align: right; }
+    .results-table th { background: #f8fafc; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+
+
+    .progress-bar-container {
+      width: 100%; background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 4px;
+    }
+
+
+    .progress-bar {
+      height: 100%; background: var(--accent); border-radius: 5px; transition: width 0.3s ease;
+    }
+
+
+    .signatures-section {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; text-align: center;
+    }
+
+
+    .signature-card {
+      border: 1px dashed var(--border); padding: 16px; border-radius: 8px; min-height: 90px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+
+
+    .signature-title { font-size: 0.85rem; font-weight: 600; color: var(--primary); }
+
+
+    .signature-section {
+      display: none; margin-top: 30px; padding: 15px; border: 1px dashed var(--border); border-radius: 8px;
+    }
+
+
+    .footer-text {
+      text-align: center; margin-top: 24px; font-size: 0.8rem; color: var(--text-muted);
+      border-top: 1px solid var(--border); padding-top: 12px;
+    }
+
+
+    @media print {
+      body { background: white; padding: 0; }
+      .top-bar, .no-print { display: none !important; }
+      .card { box-shadow: none; border: none; padding: 0; }
+      .candidate-name-input { border-bottom: none; }
+      .signature-card { border: 1px solid #cbd5e1; }
+      input, select { border: none !important; appearance: none; }
+
+
+      .signature-section {
+        display: block !important;
+        page-break-inside: avoid;
+      }
+
+
+      .signature-section .signature-title { font-weight: bold; font-size: 0.9rem; margin-bottom: 12px; }
+
+
+      .signature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+
+
+      .signature-box {
+        border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; min-height: 80px;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+
+
+      .signature-role { font-size: 0.8rem; font-weight: 600; color: #475569; }
+      .signature-line { font-size: 0.75rem; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 4px; }
+
+
+      .signatures-section { display: none !important; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1 id="appTitle">🗳️ Scrutin Pro</h1>
-  <button class="lang-btn" id="langBtn" onclick="toggleLang()">العربية</button>
-</header>
 
-<div class="container">
 
-  <div class="card" id="setupCard">
-    <h2 id="secSetup">🛠️ Configurer le scrutin</h2>
-    <div style="margin-bottom:10px">
-      <label id="lTitle">Titre du scrutin</label>
-      <input id="voteTitle" placeholder="Ex: Élection du délégué de classe — 6ème année">
+  <div class="container">
+
+
+    <div class="top-bar">
+      <div class="brand">🗳️ <span id="brand-title">Système de Scrutin Pro</span></div>
+      <div class="controls">
+        <button class="btn btn-secondary" onclick="toggleLang()" id="btn-lang">العربية</button>
+        <button class="btn btn-primary no-print" onclick="addCandidate()" id="btn-add">+ Candidat</button>
+        <button class="btn btn-secondary no-print" onclick="fillDemo()" id="btn-demo">Démo</button>
+        <button class="btn btn-danger no-print" onclick="resetAll()" id="btn-reset">Réinitialiser</button>
+        <button class="btn btn-success" onclick="window.print()" id="btn-print">Imprimer / PV PDF</button>
+      </div>
     </div>
-    <div style="margin-bottom:10px">
-      <label id="lElectorate">Nombre d'électeurs inscrits</label>
-      <input id="electorate" type="number" min="1" value="30">
-    </div>
-    <div>
-      <label id="lCandidates">Candidats</label>
-      <div id="candidateList"></div>
-      <button class="btn secondary" onclick="addCandidate()">➕ <span id="addCandLbl">Ajouter un candidat</span></button>
-    </div>
-    <div style="margin-top:12px">
-      <button class="btn" id="startBtn" onclick="startVote()">🚀 <span id="startLbl">Lancer le scrutin</span></button>
-      <button class="btn secondary" onclick="addVoter()">👤 <span id="addVoterLbl">Ajouter un électeur</span></button>
+
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title" id="txt-proc-verbal">Procès-Verbal de Dépouillement</h2>
+      </div>
+
+
+      <div class="meta-inputs">
+        <div class="input-group">
+          <label id="lbl-title">Titre de l'Élection</label>
+          <input type="text" id="election-title" value="Élection du Délégué de Classe" oninput="saveData()">
+        </div>
+        <div class="input-group">
+          <label id="lbl-org">Établissement / Organisation</label>
+          <input type="text" id="election-org" value="Lycée Ibn Khaldoun" oninput="saveData()">
+        </div>
+        <div class="input-group">
+          <label id="lbl-date">Date de Scrutin</label>
+          <input type="date" id="election-date" onchange="saveData()">
+        </div>
+        <div class="input-group">
+          <label id="lbl-voters">Inscrits / Votants Attendus</label>
+          <input type="number" id="voters-registered" value="30" min="0" oninput="calculateStats(); saveData();">
+        </div>
+      </div>
+
+
+      <div class="stats-summary">
+        <div class="stat-box"><div class="number" id="stat-registered">30</div><div class="label" id="lbl-stat-registered">Inscrits</div></div>
+        <div class="stat-box"><div class="number" id="stat-expressed">0</div><div class="label" id="lbl-stat-expressed">Exprimés</div></div>
+        <div class="stat-box"><div class="number" id="stat-blank">0</div><div class="label" id="lbl-stat-blank">Blancs/Nuls</div></div>
+        <div class="stat-box"><div class="number" id="stat-turnout">0%</div><div class="label" id="lbl-stat-turnout">Participation</div></div>
+      </div>
+
+
+      <div class="input-group no-print" style="margin-bottom: 20px;">
+        <label id="lbl-blank-votes">Bulletins Blancs et Nuls</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="number" id="blank-votes-input" value="0" min="0" style="max-width: 120px;" oninput="calculateStats(); saveData();">
+          <span style="font-size: 0.85rem; color: var(--text-muted);" id="txt-blank-desc">(Voix non attribuées aux candidats)</span>
+        </div>
+      </div>
+
+
+      <div class="candidate-grid" id="candidate-grid"></div>
+
+
+      <h3 style="margin-bottom: 12px; font-size: 1.05rem; color: var(--primary);" id="txt-detailed-results">Tableau Général des Résultats</h3>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th id="th-candidate">Candidat</th>
+            <th id="th-votes" style="width: 90px; text-align: center;">Voix</th>
+            <th id="th-percentage" style="width: 100px; text-align: center;">% Exprimés</th>
+            <th id="th-progress">Répartition</th>
+            <th class="no-print" style="width: 50px; text-align: center;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="results-tbody"></tbody>
+      </table>
+
+
+      <div class="signatures-section">
+        <div class="signature-card"><span class="signature-title" id="lbl-sig-pres-screen">Président du Bureau de Vote</span></div>
+        <div class="signature-card"><span class="signature-title" id="lbl-sig-assessors-screen">Assesseurs & Scrutateurs</span></div>
+      </div>
+
+
+      <div class="signature-section">
+        <div class="signature-title" id="lbl-sig-main-title">Émargement et signatures des membres du bureau de vote :</div>
+        <div class="signature-grid">
+          <div class="signature-box">
+            <span class="signature-role" id="lbl-sig-pres">Président(e)</span>
+            <div class="signature-line" id="lbl-sig-line-1">Nom & Prénom :</div>
+          </div>
+          <div class="signature-box">
+            <span class="signature-role" id="lbl-sig-sec">Secrétaire</span>
+            <div class="signature-line" id="lbl-sig-line-2">Nom & Prénom :</div>
+          </div>
+          <div class="signature-box">
+            <span class="signature-role" id="lbl-sig-scrut1">Scrutateur 1</span>
+            <div class="signature-line" id="lbl-sig-line-3">Nom & Prénom :</div>
+          </div>
+          <div class="signature-box">
+            <span class="signature-role" id="lbl-sig-scrut2">Scrutateur 2</span>
+            <div class="signature-line" id="lbl-sig-line-4">Nom & Prénom :</div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="footer-text">Outil développé par GIMI - Tanger</div>
     </div>
   </div>
 
-  <div class="card" id="voteCard" style="display:none">
-    <h2 id="liveTitle"></h2>
-    <div class="option-grid" id="optionGrid"></div>
-    <div class="no-print" style="margin-top:12px">
-      <button class="btn" id="stopBtn" onclick="stopVote()">⏹️ <span id="stopLbl">Clôturer le scrutin</span></button>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="num" id="statVotes">0</div><div class="lbl" id="lblVotes">Votes exprimés</div></div>
-      <div class="stat"><div class="num" id="statPct">0%</div><div class="lbl" id="lblTurnout">Taux de participation</div></div>
-      <div class="stat"><div class="num" id="statBlank">0</div><div class="lbl" id="lblBlank">Votes blancs</div></div>
-    </div>
-  </div>
 
-  <div class="card no-print" id="pvCard" style="display:none">
-    <h2 id="secVoters">📋 Grille d'émargement</h2>
-    <div class="sign-list" id="signList"></div>
-  </div>
+  <script>
+    let currentLang = 'fr';
 
-  <div class="card no-print">
-    <h2 id="secActions">⚙️ Actions</h2>
-    <button class="btn" onclick="exportPv()">🖨️ <span id="exportLbl">Imprimer PV</span></button>
-    <button class="btn secondary" onclick="resetAll()">🗑️ <span id="resetLbl">Nouveau scrutin</span></button>
-  </div>
 
-  <div class="card pv" id="pvBox"></div>
+    const translations = {
+      fr: {
+        brand: "Système de Scrutin Pro", btnLang: "العربية", btnAdd: "+ Candidat", btnDemo: "Démo",
+        btnReset: "Réinitialiser", btnPrint: "Imprimer / PV PDF",
+        txtProcVerbal: "Procès-Verbal de Dépouillement",
+        lblTitle: "Titre de l'Élection", lblOrg: "Établissement / Organisation",
+        lblDate: "Date de Scrutin", lblVoters: "Inscrits / Votants Attendus",
+        lblStatRegistered: "Inscrits", lblStatExpressed: "Exprimés", lblStatBlank: "Blancs/Nuls",
+        lblStatTurnout: "Participation", lblBlankVotes: "Bulletins Blancs et Nuls",
+        txtBlankDesc: "(Voix non attribuées aux candidats)",
+        txtDetailedResults: "Tableau Général des Résultats",
+        thCandidate: "Candidat", thVotes: "Voix", thPercentage: "% Exprimés", thProgress: "Répartition",
+        lblSigPresScreen: "Président du Bureau de Vote", lblSigAssessorsScreen: "Assesseurs & Scrutateurs",
+        sigTitle: "Émargement et signatures des membres du bureau de vote :",
+        sigPres: "Président(e)", sigSec: "Secrétaire", sigScrut1: "Scrutateur 1", sigScrut2: "Scrutateur 2",
+        sigNameLine: "Nom & Prénom :", winnerBadge: "En Tête"
+      },
+      ar: {
+        brand: "نظام الاقتراع والتصويت", btnLang: "Français", btnAdd: "+ مرشح جديد", btnDemo: "تجريبي",
+        btnReset: "إعادة ضبط", btnPrint: "طباعة / المحضر PDF",
+        txtProcVerbal: "محضر فرز الأصوات",
+        lblTitle: "عنوان الانتخاب / الاقتراع", lblOrg: "المؤسسة / الهيئة",
+        lblDate: "تاريخ الاقتراع", lblVoters: "المسجلون / المصوتون المفترضون",
+        lblStatRegistered: "المسجلون", lblStatExpressed: "الأصوات المعبر عنها", lblStatBlank: "الملغاة / البيضاء",
+        lblStatTurnout: "نسبة المشاركة", lblBlankVotes: "الأوراق الملغاة والبيضاء",
+        txtBlankDesc: "(أصوات غير محسوبة للمرشحين)",
+        txtDetailedResults: "جدول النتائج العامة",
+        thCandidate: "المرشح", thVotes: "الأصوات", thPercentage: "النسبة %", thProgress: "التوزيع",
+        lblSigPresScreen: "رئيس مكتب التصويت", lblSigAssessorsScreen: "المعينون والفرز",
+        sigTitle: "توقيعات وأعضاء مكتب الاقتراع:",
+        sigPres: "رئيس(ة) المكتب", sigSec: "الكاتب(ة)", sigScrut1: "المفرز 1", sigScrut2: "المفرز 2",
+        sigNameLine: "الاسم والنسب:", winnerBadge: "في الصدارة"
+      }
+    };
 
-  <div class="footer">Scrutin Pro — données stockées localement sur cet appareil.</div>
-</div>
 
-<script>
-const T = {
-  fr: {
-    title:"🗳️ Scrutin Pro", secSetup:"🛠️ Configurer le scrutin", lTitle:"Titre du scrutin", lElectorate:"Nombre d'électeurs inscrits",
-    lCandidates:"Candidats", addCandLbl:"Ajouter un candidat", startLbl:"Lancer le scrutin", addVoterLbl:"Ajouter un électeur",
-    secVoters:"📋 Grille d'émargement", secActions:"⚙️ Actions", exportLbl:"Imprimer PV", resetLbl:"Nouveau scrutin",
-    lblVotes:"Votes exprimés", lblTurnout:"Taux de participation", lblBlank:"Votes blancs", stopLbl:"Clôturer le scrutin",
-    candPlaceholder:"Nom du candidat", voterPlaceholder:"Nom de l'électeur", blankOption:"Vote blanc / Abstention",
-    votes:"voix", pvTitle:"Procès-verbal du scrutin", pvCandidates:"Résultats", pvTotal:"Total des suffrages exprimés", pvTurnout:"Participation", pvWinner:"Candidat élu", pvSigns:"Grille d'émargement (présents)", pvStatus:"Scrutin", pvClosed:"Clôturé", pvOpen:"En cours", confirmStop:"Clôturer le scrutin ? Les votes ne seront plus possibles.", confirmReset:"Recommencer un nouveau scrutin ?", voteThanks:"Votre vote a été enregistré."
-  },
-  ar: {
-    title:"🗳️ نظام التصويت", secSetup:"🛠️ إعداد عملية التصويت", lTitle:"عنوان عملية التصويت", lElectorate:"عدد الناخبين المسجلين",
-    lCandidates:"المرشحون", addCandLbl:"إضافة مرشح", startLbl:"بدء التصويت", addVoterLbl:"إضافة ناخب",
-    secVoters:"📋 لائحة التوقيع", secActions:"⚙️ إجراءات", exportLbl:"طباعة المحضر", resetLbl:"عملية جديدة",
-    lblVotes:"الأصوات المعبر عنها", lblTurnout:"نسبة المشاركة", lblBlank:"أوراق بيضاء", stopLbl:"إغلاق التصويت",
-    candPlaceholder:"اسم المرشح", voterPlaceholder:"اسم الناخب", blankOption:"ورقة بيضاء / امتناع",
-    votes:"صوت", pvTitle:"محضر عملية التصويت", pvCandidates:"النتائج", pvTotal:"مجموع الأصوات المعبر عنها", pvTurnout:"نسبة المشاركة", pvWinner:"المرشح(ة) المنتخب(ة)", pvSigns:"لائحة التوقيع (الحاضرون)", pvStatus:"حالة التصويت", pvClosed:"مغلق", pvOpen:"جاري", confirmStop:"إغلاق التصويت؟ لن يكون بالإمكان التصويت بعد الآن.", confirmReset:"بدء عملية تصويت جديدة؟", voteThanks:"تم تسجيل صوتك."
-  }
-};
+    function getDefaultCandidates() {
+      return [
+        { name_fr: "Aymane El Amrani", name_ar: "أيمن العمراني", votes: 0 },
+        { name_fr: "Salma Benali", name_ar: "سلمى بنعلي", votes: 0 },
+        { name_fr: "Omar Tazi", name_ar: "عمر التازي", votes: 0 }
+      ];
+    }
 
-let lang = localStorage.getItem('sp_lang') || 'fr';
-let state = {
-  title:'', electorate:30, candidates:[], voters:[],
-  counts:{}, blanks:0, started:false, closed:false, myVote:false
-};
 
-function t(k){ return T[lang][k]; }
-function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    let candidates = getDefaultCandidates();
 
-function toggleLang(){
-  lang = lang === 'fr' ? 'ar' : 'fr';
-  document.body.classList.toggle('ar', lang === 'ar');
-  document.documentElement.lang = lang;
-  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  localStorage.setItem('sp_lang', lang);
-  applyTexts();
-}
 
-function applyTexts(){
-  document.getElementById('appTitle').textContent = t('title');
-  document.getElementById('secSetup').textContent = t('secSetup');
-  document.getElementById('lTitle').textContent = t('lTitle');
-  document.getElementById('lElectorate').textContent = t('lElectorate');
-  document.getElementById('lCandidates').textContent = t('lCandidates');
-  document.getElementById('addCandLbl').textContent = t('addCandLbl');
-  document.getElementById('startLbl').textContent = t('startLbl');
-  document.getElementById('addVoterLbl').textContent = t('addVoterLbl');
-  document.getElementById('secVoters').textContent = t('secVoters');
-  document.getElementById('secActions').textContent = t('secActions');
-  document.getElementById('exportLbl').textContent = t('exportLbl');
-  document.getElementById('resetLbl').textContent = t('resetLbl');
-  document.getElementById('lblVotes').textContent = t('lblVotes');
-  document.getElementById('lblTurnout').textContent = t('lblTurnout');
-  document.getElementById('lblBlank').textContent = t('lblBlank');
-  document.getElementById('stopLbl').textContent = t('stopLbl');
-  document.getElementById('langBtn').textContent = lang === 'fr' ? 'العربية' : 'Français';
-}
+    function init() {
+      document.getElementById('election-date').valueAsDate = new Date();
+      const saved = localStorage.getItem('scrutin_gimi_data');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          candidates = data.candidates || candidates;
+          document.getElementById('election-title').value = data.title || "Élection du Délégué de Classe";
+          document.getElementById('election-org').value = data.org || "Lycée Ibn Khaldoun";
+          if (data.date) document.getElementById('election-date').value = data.date;
+          document.getElementById('voters-registered').value = data.registered || 30;
+          document.getElementById('blank-votes-input').value = data.blank || 0;
+        } catch(e) { console.error(e); }
+      }
+      render();
+    }
 
-function addCandidate(){
-  state.candidates.push({name:'', votes:0});
-  renderCandidates();
-}
 
-function removeCandidate(i){
-  state.candidates.splice(i,1);
-  renderCandidates();
-}
+    function render() {
+      const t = translations[currentLang];
+      document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
 
-function renderCandidates(){
-  const list = document.getElementById('candidateList');
-  list.innerHTML = '';
-  state.candidates.forEach((c,i)=>{
-    const row = document.createElement('div');
-    row.className = 'candidate-row';
-    row.innerHTML = `<input data-i="${i}" value="${esc(c.name)}" placeholder="${t('candPlaceholder')}">` +
-      `<button class="del" onclick="removeCandidate(${i})">✕</button>`;
-    list.appendChild(row);
-  });
-  document.querySelectorAll('#candidateList input').forEach(inp=>{
-    inp.addEventListener('input', function(){ state.candidates[+this.dataset.i].name = this.value; });
-  });
-}
 
-function addVoter(){
-  const name = prompt(t('voterPlaceholder'));
-  if(name && name.trim()) state.voters.push({name:name.trim(), signed:false});
-  renderVoters();
-}
+      document.getElementById('brand-title').innerText = t.brand;
+      document.getElementById('btn-lang').innerText = t.btnLang;
+      document.getElementById('btn-add').innerText = t.btnAdd;
+      document.getElementById('btn-demo').innerText = t.btnDemo;
+      document.getElementById('btn-reset').innerText = t.btnReset;
+      document.getElementById('btn-print').innerText = t.btnPrint;
+      document.getElementById('txt-proc-verbal').innerText = t.txtProcVerbal;
+      document.getElementById('lbl-title').innerText = t.lblTitle;
+      document.getElementById('lbl-org').innerText = t.lblOrg;
+      document.getElementById('lbl-date').innerText = t.lblDate;
+      document.getElementById('lbl-voters').innerText = t.lblVoters;
+      document.getElementById('lbl-stat-registered').innerText = t.lblStatRegistered;
+      document.getElementById('lbl-stat-expressed').innerText = t.lblStatExpressed;
+      document.getElementById('lbl-stat-blank').innerText = t.lblStatBlank;
+      document.getElementById('lbl-stat-turnout').innerText = t.lblStatTurnout;
+      document.getElementById('lbl-blank-votes').innerText = t.lblBlankVotes;
+      document.getElementById('txt-blank-desc').innerText = t.txtBlankDesc;
+      document.getElementById('txt-detailed-results').innerText = t.txtDetailedResults;
+      document.getElementById('th-candidate').innerText = t.thCandidate;
+      document.getElementById('th-votes').innerText = t.thVotes;
+      document.getElementById('th-percentage').innerText = t.thPercentage;
+      document.getElementById('th-progress').innerText = t.thProgress;
+      document.getElementById('lbl-sig-pres-screen').innerText = t.lblSigPresScreen;
+      document.getElementById('lbl-sig-assessors-screen').innerText = t.lblSigAssessorsScreen;
+      document.getElementById('lbl-sig-main-title').innerText = t.sigTitle;
+      document.getElementById('lbl-sig-pres').innerText = t.sigPres;
+      document.getElementById('lbl-sig-sec').innerText = t.sigSec;
+      document.getElementById('lbl-sig-scrut1').innerText = t.sigScrut1;
+      document.getElementById('lbl-sig-scrut2').innerText = t.sigScrut2;
+      for (let i = 1; i <= 4; i++) { document.getElementById(`lbl-sig-line-${i}`).innerText = t.sigNameLine; }
 
-function renderVoters(){
-  const list = document.getElementById('signList');
-  list.innerHTML = '';
-  state.voters.forEach((v,i)=>{
-    const row = document.createElement('div');
-    row.className = 'sign-row';
-    row.innerHTML = `<input type="checkbox" ${v.signed?'checked':''} data-i="${i}"> <span>${esc(v.name)}</span>`;
-    list.appendChild(row);
-  });
-  document.querySelectorAll('#signList input').forEach(inp=>{
-    inp.addEventListener('change', function(){
-      state.voters[+this.dataset.i].signed = this.checked;
-      save();
-    });
-  });
-}
 
-function startVote(){
-  const title = document.getElementById('voteTitle').value.trim();
-  state.title = title || (lang==='fr'?'Scrutin':'تصويت');
-  state.electorate = +document.getElementById('electorate').value || 1;
-  state.counts = {}; state.blanks = 0; state.started = true; state.closed = false; state.myVote = false;
-  save(); render();
-}
+      renderCandidates();
+      calculateStats();
+    }
 
-function stopVote(){
-  if(!confirm(t('confirmStop'))) return;
-  state.closed = true;
-  save(); render();
-}
 
-function vote(i){
-  if(!state.started || state.closed) return;
-  if(state.myVote){ alert(lang==='fr'?'Vous avez déjà voté.':'لقد صوت بالفعل.'); return; }
-  if(i === -1){ state.blanks++; }
-  else { state.counts[i] = (state.counts[i]||0) + 1; }
-  state.myVote = true;
-  save(); render();
-  alert(t('voteThanks'));
-}
+    function renderCandidates() {
+      const grid = document.getElementById('candidate-grid');
+      const tbody = document.getElementById('results-tbody');
+      grid.innerHTML = '';
+      tbody.innerHTML = '';
 
-function render(){
-  document.getElementById('liveTitle').textContent = state.title;
-  document.getElementById('setupCard').style.display = state.started ? 'none' : 'block';
-  document.getElementById('voteCard').style.display = state.started ? 'block' : 'none';
-  document.getElementById('pvCard').style.display = state.started ? 'block' : 'none';
 
-  const grid = document.getElementById('optionGrid');
-  grid.innerHTML = '';
-  const totalVotes = state.candidates.reduce((s,c)=> s + (state.counts[state.candidates.indexOf(c)]||0), 0) + state.blanks;
-  const base = totalVotes > 0 ? totalVotes : 1;
+      let maxVotes = 0;
+      candidates.forEach(c => { if (c.votes > maxVotes) maxVotes = c.votes; });
+      const totalCandidateVotes = candidates.reduce((acc, c) => acc + (parseInt(c.votes) || 0), 0);
 
-  state.candidates.forEach((c,i)=>{
-    const n = state.counts[i]||0;
-    const pct = Math.round((n/base)*100);
-    const card = document.createElement('div');
-    card.className = 'option-card';
-    card.innerHTML = `<div class="votes">${n} ${t('votes')}</div>
-      <div><b>${esc(c.name||'?')}</b></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>`;
-    if(state.started && !state.closed && !state.myVote) card.onclick = ()=>vote(i);
-    grid.appendChild(card);
-  });
 
-  const blankPct = Math.round((state.blanks/base)*100);
-  const blank = document.createElement('div');
-  blank.className = 'option-card';
-  blank.innerHTML = `<div class="votes">${state.blanks} ${t('votes')}</div>
-    <div><b>${t('blankOption')}</b></div>
-    <div class="bar-track"><div class="bar-fill" style="width:${blankPct}%"></div></div>`;
-  if(state.started && !state.closed && !state.myVote) blank.onclick = ()=>vote(-1);
-  grid.appendChild(blank);
+      candidates.forEach((c, idx) => {
+        const name = currentLang === 'ar' ? (c.name_ar || c.name_fr) : (c.name_fr || c.name_ar);
+        const isWinner = c.votes > 0 && c.votes === maxVotes;
+        const card = document.createElement('div');
+        card.className = `candidate-card ${isWinner ? 'winner' : ''}`;
+        card.innerHTML = `
+          ${isWinner ? `<span class="winner-badge">${translations[currentLang].winnerBadge}</span>` : ''}
+          <input type="text" class="candidate-name-input" value="${name}" oninput="updateCandidateName(${idx}, this.value)">
+          <div class="vote-controls">
+            <button class="vote-btn sub" onclick="changeVote(${idx}, -1)">-</button>
+            <span class="vote-count-display">${c.votes}</span>
+            <button class="vote-btn add" onclick="changeVote(${idx}, 1)">+</button>
+          </div>
+        `;
+        grid.appendChild(card);
 
-  document.getElementById('statVotes').textContent = totalVotes;
-  document.getElementById('statPct').textContent = Math.round((totalVotes/Math.max(1,state.electorate))*100) + '%';
-  document.getElementById('statBlank').textContent = state.blanks;
-  document.getElementById('stopBtn').style.display = (state.started && !state.closed) ? 'inline-block' : 'none';
 
-  renderPv(totalVotes);
-}
+        const pct = totalCandidateVotes > 0 ? ((c.votes / totalCandidateVotes) * 100).toFixed(1) : '0.0';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${name}</strong></td>
+          <td style="text-align: center; font-weight: 700;">${c.votes}</td>
+          <td style="text-align: center;">${pct}%</td>
+          <td><div class="progress-bar-container"><div class="progress-bar" style="width: ${pct}%;"></div></div></td>
+          <td class="no-print" style="text-align: center;"><button class="btn btn-danger" style="padding: 2px 8px;" onclick="removeCandidate(${idx})">×</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-function renderPv(totalVotes){
-  const box = document.getElementById('pvBox');
-  let lines = `📄 ${t('pvTitle')}: ${state.title}\n`;
-  lines += `${t('pvStatus')}: ${state.closed ? t('pvClosed') : t('pvOpen')}\n`;
-  lines += `─\n${t('pvCandidates')}:\n`;
-  state.candidates.forEach((c,i)=>{
-    const n = state.counts[i]||0;
-    const pct = totalVotes ? Math.round((n/totalVotes)*100) : 0;
-    lines += `  ${c.name||'?'}: ${n} (${pct}%)\n`;
-  });
-  lines += `  ${t('blankOption')}: ${state.blanks}\n`;
-  lines += `─\n${t('pvTotal')}: ${totalVotes} / ${state.electorate}\n`;
-  lines += `${t('pvTurnout')}: ${Math.round((totalVotes/Math.max(1,state.electorate))*100)}%\n`;
-  let winner = {name:null, n:-1};
-  state.candidates.forEach((c,i)=>{ if((state.counts[i]||0) > winner.n) winner = {name:c.name, n:state.counts[i]||0}; });
-  if(state.closed && winner.name) lines += `🏆 ${t('pvWinner')}: ${winner.name} (${winner.n} ${t('votes')})\n`;
-  lines += `─\n${t('pvSigns')}:\n`;
-  state.voters.forEach(v=>{ lines += `  ${v.signed ? '☑' : '☐'} ${v.name}\n`; });
-  box.textContent = lines;
-}
 
-function exportPv(){ window.print(); }
+    function updateCandidateName(idx, val) { if (currentLang === 'ar') candidates[idx].name_ar = val; else candidates[idx].name_fr = val; renderCandidates(); saveData(); }
+    function changeVote(idx, delta) { candidates[idx].votes = Math.max(0, (parseInt(candidates[idx].votes) || 0) + delta); renderCandidates(); calculateStats(); saveData(); }
+    function addCandidate() { candidates.push({ name_fr: "Nouveau Candidat", name_ar: "مرشح جديد", votes: 0 }); renderCandidates(); calculateStats(); saveData(); }
+    function removeCandidate(idx) { candidates.splice(idx, 1); renderCandidates(); calculateStats(); saveData(); }
 
-function resetAll(){
-  if(!confirm(t('confirmReset'))) return;
-  localStorage.removeItem('sp_state');
-  state = { title:'', electorate:30, candidates:[], voters:[], counts:{}, blanks:0, started:false, closed:false, myVote:false };
-  document.getElementById('voteTitle').value='';
-  document.getElementById('electorate').value='30';
-  renderCandidates(); renderVoters(); render();
-}
 
-function save(){ localStorage.setItem('sp_state', JSON.stringify(state)); }
+    function calculateStats() {
+      const registered = parseInt(document.getElementById('voters-registered').value) || 0;
+      const blank = parseInt(document.getElementById('blank-votes-input').value) || 0;
+      const expressed = candidates.reduce((acc, c) => acc + (parseInt(c.votes) || 0), 0);
+      const totalVoted = expressed + blank;
+      document.getElementById('stat-registered').innerText = registered;
+      document.getElementById('stat-expressed').innerText = expressed;
+      document.getElementById('stat-blank').innerText = blank;
+      const turnoutPct = registered > 0 ? ((totalVoted / registered) * 100).toFixed(1) : '0.0';
+      document.getElementById('stat-turnout').innerText = `${turnoutPct}%`;
+    }
 
-try{
-  const saved = JSON.parse(localStorage.getItem('sp_state'));
-  if(saved){ state = Object.assign(state, saved); }
-}catch(e){}
 
-renderCandidates();
-renderVoters();
-render();
-applyTexts();
-</script>
+    function toggleLang() { currentLang = currentLang === 'fr' ? 'ar' : 'fr'; render(); }
+
+
+    function fillDemo() {
+      document.getElementById('election-title').value = "Élection du Bureau des Étudiants (BDE)";
+      document.getElementById('election-org').value = "Institut Supérieur de Gestion";
+      document.getElementById('voters-registered').value = 45;
+      document.getElementById('blank-votes-input').value = 2;
+      candidates = [
+        { name_fr: "Amine Radi", name_ar: "أمين راضي", votes: 18 },
+        { name_fr: "Sarah Alami", name_ar: "سارة العلمي", votes: 21 },
+        { name_fr: "Karim Tazi", name_ar: "كريم التازي", votes: 4 }
+      ];
+      render(); saveData();
+    }
+
+
+    function resetAll() {
+      document.getElementById('election-title').value = "Élection du Délégué de Classe";
+      document.getElementById('election-org').value = "Lycée Ibn Khaldoun";
+      document.getElementById('voters-registered').value = 30;
+      document.getElementById('blank-votes-input').value = 0;
+      candidates = getDefaultCandidates();
+      localStorage.removeItem('scrutin_gimi_data');
+      render();
+    }
+
+
+    function saveData() {
+      const data = {
+        title: document.getElementById('election-title').value,
+        org: document.getElementById('election-org').value,
+        date: document.getElementById('election-date').value,
+        registered: document.getElementById('voters-registered').value,
+        blank: document.getElementById('blank-votes-input').value,
+        candidates: candidates
+      };
+      localStorage.setItem('scrutin_gimi_data', JSON.stringify(data));
+    }
+
+
+    init();
+  </script>
 </body>
 </html>
