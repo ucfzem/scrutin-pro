@@ -814,23 +814,9 @@
         const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
         const pageW = 210, pageH = 297;
         const imgW = pageW, imgH = (canvas.height / canvas.width) * pageW;
-        if (imgH <= pageH) {
-          pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgW, imgH);
-        } else {
-          const pages = Math.ceil(imgH / pageH);
-          const sliceH = Math.ceil(canvas.height / pages);
-          for (let i = 0; i < pages; i++) {
-            if (i > 0) pdf.addPage();
-            const slice = document.createElement('canvas');
-            slice.width = canvas.width;
-            slice.height = Math.min(sliceH, canvas.height - i * sliceH);
-            const ctx = slice.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, slice.width, slice.height);
-            ctx.drawImage(canvas, 0, i * sliceH, canvas.width, sliceH, 0, 0, canvas.width, slice.height);
-            pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, imgW, (slice.height / canvas.width) * pageW);
-          }
-        }
+        const scale = Math.min(1, pageH / imgH);
+        const w = imgW * scale, h = imgH * scale;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', (pageW - w) / 2, (pageH - h) / 2, w, h);
         pdf.save('PV_Scrutin.pdf');
         restore();
       }).catch((err) => {
