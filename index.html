@@ -3,6 +3,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Système de Scrutin & Élection Pro - UcfZem</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root {
       --primary: #1e293b;
@@ -408,6 +409,7 @@
         <button class="btn btn-secondary no-print" onclick="fillDemo()" id="btn-demo">Démo</button>
         <button class="btn btn-danger no-print" onclick="resetAll()" id="btn-reset">Réinitialiser</button>
         <button class="btn btn-success" onclick="window.print()" id="btn-print">Imprimer / PV PDF</button>
+        <button class="btn btn-primary no-print" onclick="TelechargerPDF()" id="btn-pdf">Télécharger PDF</button>
       </div>
     </div>
 
@@ -516,7 +518,7 @@
     const translations = {
       fr: {
         brand: "Système de Scrutin Pro", btnLang: "العربية", btnAdd: "+ Candidat", btnDemo: "Démo",
-        btnReset: "Réinitialiser", btnPrint: "Imprimer / PV PDF",
+        btnReset: "Réinitialiser", btnPrint: "Imprimer / PV PDF", btnPdf: "Télécharger PDF",
         txtProcVerbal: "Procès-Verbal de Dépouillement",
         lblTitle: "Titre de l'Élection", lblOrg: "Établissement / Organisation",
         lblDate: "Date de Scrutin", lblVoters: "Inscrits / Votants Attendus",
@@ -532,7 +534,7 @@
       },
       ar: {
         brand: "نظام الاقتراع والتصويت", btnLang: "Français", btnAdd: "+ مرشح جديد", btnDemo: "تجريبي",
-        btnReset: "إعادة ضبط", btnPrint: "طباعة / المحضر PDF",
+        btnReset: "إعادة ضبط", btnPrint: "طباعة / المحضر PDF", btnPdf: "تحميل PDF",
         txtProcVerbal: "محضر فرز الأصوات",
         lblTitle: "عنوان الانتخاب / الاقتراع", lblOrg: "المؤسسة / الهيئة",
         lblDate: "تاريخ الاقتراع", lblVoters: "المسجلون / المصوتون المفترضون",
@@ -590,6 +592,7 @@
       document.getElementById('btn-demo').innerText = t.btnDemo;
       document.getElementById('btn-reset').innerText = t.btnReset;
       document.getElementById('btn-print').innerText = t.btnPrint;
+      document.getElementById('btn-pdf').innerText = t.btnPdf;
       document.getElementById('txt-proc-verbal').innerText = t.txtProcVerbal;
       document.getElementById('lbl-title').innerText = t.lblTitle;
       document.getElementById('lbl-org').innerText = t.lblOrg;
@@ -684,6 +687,39 @@
 
 
     function toggleLang() { currentLang = currentLang === 'fr' ? 'ar' : 'fr'; render(); }
+
+
+    function TelechargerPDF() {
+      const original = document.querySelector('.card');
+      const clone = original.cloneNode(true);
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '210mm';
+      clone.style.boxShadow = 'none';
+      clone.querySelectorAll('.no-print').forEach(el => { el.remove(); });
+      clone.querySelectorAll('.signatures-section').forEach(el => { el.style.display = 'none'; });
+      const sig = clone.querySelector('.signature-section');
+      if (sig) sig.style.display = 'block';
+      clone.querySelectorAll('.table-wrap').forEach(w => { w.style.overflow = 'visible'; });
+      clone.querySelectorAll('input, select').forEach(el => {
+        el.style.border = 'none';
+        el.style.background = 'transparent';
+        el.style.color = '#000000';
+      });
+      document.body.appendChild(clone);
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: 'PV_Scrutin.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+      html2pdf().set(opt).from(clone).save().then(() => {
+        document.body.removeChild(clone);
+      });
+    }
 
 
     function fillDemo() {
