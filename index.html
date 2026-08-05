@@ -506,7 +506,7 @@
       </div>
 
 
-      <div class="footer-text">Outil développé par UcfZem - Tanger</div>
+      <div class="footer-text" id="footer-text">Outil développé par UcfZem - Tanger</div>
     </div>
   </div>
 
@@ -530,7 +530,7 @@
         lblSigPresScreen: "Président du Bureau de Vote", lblSigAssessorsScreen: "Assesseurs & Scrutateurs",
         sigTitle: "Émargement et signatures des membres du bureau de vote :",
         sigPres: "Président(e)", sigSec: "Secrétaire", sigScrut1: "Scrutateur 1", sigScrut2: "Scrutateur 2",
-        sigNameLine: "Nom & Prénom :", winnerBadge: "En Tête"
+        sigNameLine: "Nom & Prénom :", winnerBadge: "En Tête", footer: "Outil développé par UcfZem - Tanger"
       },
       ar: {
         brand: "نظام الاقتراع والتصويت", btnLang: "Français", btnAdd: "+ مرشح جديد", btnDemo: "تجريبي",
@@ -546,7 +546,7 @@
         lblSigPresScreen: "رئيس مكتب التصويت", lblSigAssessorsScreen: "المعينون والفرز",
         sigTitle: "توقيعات وأعضاء مكتب الاقتراع:",
         sigPres: "رئيس(ة) المكتب", sigSec: "الكاتب(ة)", sigScrut1: "المفرز 1", sigScrut2: "المفرز 2",
-        sigNameLine: "الاسم والنسب:", winnerBadge: "في الصدارة"
+        sigNameLine: "الاسم والنسب:", winnerBadge: "في الصدارة", footer: "أداة مطورة من طرف UcfZem - طنجة"
       }
     };
 
@@ -617,6 +617,7 @@
       document.getElementById('lbl-sig-scrut1').innerText = t.sigScrut1;
       document.getElementById('lbl-sig-scrut2').innerText = t.sigScrut2;
       for (let i = 1; i <= 4; i++) { document.getElementById(`lbl-sig-line-${i}`).innerText = t.sigNameLine; }
+      document.getElementById('footer-text').innerText = t.footer;
 
 
       renderCandidates();
