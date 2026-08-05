@@ -337,8 +337,12 @@
       .candidate-grid { grid-template-columns: 1fr; }
       .stats-summary { grid-template-columns: 1fr 1fr; }
       .signatures-section { grid-template-columns: 1fr; }
-      .table-wrap table { min-width: 380px; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-wrap table { min-width: 0; }
       .results-table th, .results-table td { padding: 8px 6px; font-size: 0.8rem; }
+      .results-table th:nth-child(2), .results-table td:nth-child(2) { width: 55px; }
+      .results-table th:nth-child(3), .results-table td:nth-child(3) { width: 65px; }
+      .results-table th:nth-child(4), .results-table td:nth-child(4) { display: none; }
       .vote-btn { width: 44px; height: 44px; }
       .vote-count-display { font-size: 1.6rem; }
     }
@@ -744,14 +748,17 @@
       const card = document.querySelector('.card');
       const prevWidth = card.style.width;
       const prevMaxWidth = card.style.maxWidth;
+      const prevDisplay = card.style.display;
       document.body.classList.add('pdf-mode');
+      card.style.display = 'block';
       card.style.width = '210mm';
       card.style.maxWidth = '210mm';
+      const captureWidth = Math.ceil(card.getBoundingClientRect().width);
       const opt = {
         margin: [8, 8, 8, 8],
         filename: 'PV_Scrutin.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: captureWidth, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
       };
@@ -759,6 +766,7 @@
         document.body.classList.remove('pdf-mode');
         card.style.width = prevWidth;
         card.style.maxWidth = prevMaxWidth;
+        card.style.display = prevDisplay;
       });
     }
 
