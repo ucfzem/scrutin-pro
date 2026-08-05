@@ -343,6 +343,7 @@
       .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .table-wrap table { min-width: 0; }
       .results-table th, .results-table td { padding: 8px 6px; font-size: 0.8rem; }
+      .results-table th:first-child, .results-table td:first-child { width: auto; min-width: 45%; white-space: normal; }
       .results-table th:nth-child(2), .results-table td:nth-child(2) { width: 55px; }
       .results-table th:nth-child(3), .results-table td:nth-child(3) { width: 65px; }
       .results-table th:nth-child(4), .results-table td:nth-child(4) { display: none; }
@@ -532,7 +533,7 @@
             <th id="th-votes" style="width: 90px; text-align: center;">Voix</th>
             <th id="th-percentage" style="width: 100px; text-align: center;">% Exprimés</th>
             <th id="th-progress">Répartition</th>
-            <th class="no-print" style="width: 50px; text-align: center;">Action</th>
+            <th class="no-print" id="th-action" style="width: 50px; text-align: center;">Action</th>
           </tr>
         </thead>
         <tbody id="results-tbody"></tbody>
@@ -589,7 +590,7 @@
         lblStatTurnout: "Participation", lblBlankVotes: "Bulletins Blancs et Nuls",
         txtBlankDesc: "(Voix non attribuées aux candidats)",
         txtDetailedResults: "Tableau Général des Résultats",
-        thCandidate: "Candidat", thVotes: "Voix", thPercentage: "% Exprimés", thProgress: "Répartition",
+        thCandidate: "Candidat", thVotes: "Voix", thPercentage: "% Exprimés", thProgress: "Répartition", thAction: "Action",
         lblSigPresScreen: "Président du Bureau de Vote", lblSigAssessorsScreen: "Assesseurs & Scrutateurs",
         sigTitle: "Émargement et signatures des membres du bureau de vote :",
         sigPres: "Président(e)", sigSec: "Secrétaire", sigScrut1: "Scrutateur 1", sigScrut2: "Scrutateur 2",
@@ -597,7 +598,7 @@
       },
       ar: {
         brand: "نظام الاقتراع والتصويت", btnLang: "Français", btnAdd: "+ مرشح جديد", btnDemo: "تجريبي",
-        btnReset: "إعادة ضبط", btnPrint: "طباعة / المحضر PDF", btnPdf: "تحميل PDF",
+        btnReset: "إعادة ضبط", btnPrint: "طباعة المحضر", btnPdf: "تحميل المحضر",
         txtProcVerbal: "محضر فرز الأصوات",
         lblTitle: "عنوان الانتخاب / الاقتراع", lblOrg: "المؤسسة / الهيئة",
         lblDate: "تاريخ الاقتراع", lblVoters: "المسجلون / المصوتون المفترضون",
@@ -605,7 +606,7 @@
         lblStatTurnout: "نسبة المشاركة", lblBlankVotes: "الأوراق الملغاة والبيضاء",
         txtBlankDesc: "(أصوات غير محسوبة للمرشحين)",
         txtDetailedResults: "جدول النتائج العامة",
-        thCandidate: "المرشح", thVotes: "الأصوات", thPercentage: "النسبة %", thProgress: "التوزيع",
+        thCandidate: "المرشح", thVotes: "الأصوات", thPercentage: "النسبة %", thProgress: "التوزيع", thAction: "إجراء",
         lblSigPresScreen: "رئيس مكتب التصويت", lblSigAssessorsScreen: "المعينون والفرز",
         sigTitle: "توقيعات وأعضاء مكتب الاقتراع:",
         sigPres: "رئيس(ة) المكتب", sigSec: "الكاتب(ة)", sigScrut1: "المفرز 1", sigScrut2: "المفرز 2",
@@ -672,6 +673,7 @@
       document.getElementById('th-votes').innerText = t.thVotes;
       document.getElementById('th-percentage').innerText = t.thPercentage;
       document.getElementById('th-progress').innerText = t.thProgress;
+      document.getElementById('th-action').innerText = t.thAction;
       document.getElementById('lbl-sig-pres-screen').innerText = t.lblSigPresScreen;
       document.getElementById('lbl-sig-assessors-screen').innerText = t.lblSigAssessorsScreen;
       document.getElementById('lbl-sig-main-title').innerText = t.sigTitle;
@@ -788,8 +790,9 @@
 
 
     function fillDemo() {
-      document.getElementById('election-title').value = "Élection du Bureau des Étudiants (BDE)";
-      document.getElementById('election-org').value = "Institut Supérieur de Gestion";
+      const isAr = currentLang === 'ar';
+      document.getElementById('election-title').value = isAr ? "انتخاب المكتب الطلابي" : "Élection du Bureau des Étudiants (BDE)";
+      document.getElementById('election-org').value = isAr ? "المعهد العالي للتسيير" : "Institut Supérieur de Gestion";
       document.getElementById('voters-registered').value = 45;
       document.getElementById('blank-votes-input').value = 2;
       candidates = [
